@@ -194,10 +194,9 @@ def init_network(input_shape):
 def fit_model(train_x, train_y, num_tasks=10):
     # Dimensions 0 and 1 are task and sample, respectively.
     network = init_network(train_x.shape[2:])
-    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs = 5)
+    l2n = LifelongClassificationNetwork(network=network)
 
-    # TODO remove 2 and put num tasks.
-    for t in range(2):
+    for t in range(num_tasks):
         print("TRAINING TASK: ", t)
         print("-------------------------------------------------------------------")
         classes = np.unique(train_y[t])
@@ -212,12 +211,15 @@ def compute_posteriors(test_x, test_y, l2n, num_tasks=10):
     classes = np.array(l2n.pl.task_id_to_decider[0].classes)
     probs = l2n.predict_proba(test_x[0], 0)
 
-    for t in range(1, 2):
+    for t in range(1, num_tasks):
         probs = np.concatenate((probs, l2n.predict_proba(test_x[t], t)), axis=1)
-        classes = np.concatenate((classes, np.array(l2n.pl.task_id_to_decider[t].classes)))
+        classes = np.concatenate(
+            (classes, np.array(l2n.pl.task_id_to_decider[t].classes))
+        )
 
     # Save test data again just to make sure posteriors match.
-    pickle.dump(test_x, open("data/test_x.p", "wb"))
-    pickle.dump(test_y, open("data/test_y.p", "wb"))
+    pickle.dump(test_x, open("output/test_x.p", "wb"))
+    pickle.dump(test_y, open("output/test_y.p", "wb"))
     pickle.dump(classes, open("output/classes.p", "wb"))
     pickle.dump(probs, open("output/probs.p", "wb"))
+
