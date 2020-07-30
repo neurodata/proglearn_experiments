@@ -193,16 +193,16 @@ def init_network(input_shape):
 
 
 def fit_model(train_x, train_y, num_tasks=10):
-    network = init_network(train_x.shape[1:])
-    l2n = LifelongClassificationNetwork(network=network, verbose=True)
+    # Dimensions 0 and 1 are task and sample, respectively.
+    network = init_network(train_x.shape[2:])
+    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs = 5)
 
     # TODO remove 2 and put num tasks.
     for t in range(2):
         print("TRAINING TASK: ", t)
         print("-------------------------------------------------------------------")
         classes = np.unique(train_y[t])
-        print(train_x[t].shape)
-        # l2n.add_task(X=train_x[t], y=train_x[t], decider_kwargs={"classes": classes})
+        l2n.add_task(X=train_x[t], y=train_x[t], decider_kwargs={"classes": classes})
         print("-------------------------------------------------------------------")
 
     return l2n
