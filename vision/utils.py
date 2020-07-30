@@ -123,13 +123,13 @@ def load_data(num_tasks=10):
     test_y = data["test_y"]
 
     train_x = train_x.reshape(10, 5000, 32, 32, 3)
-    train_y = train_y.reshape(10, 5000, 1)
+    train_y = train_y.reshape(10, 5000)
     test_x = test_x.reshape(10, 1000, 32, 32, 3)
-    test_y = test_y.reshape(10, 1000, 1)
+    test_y = test_y.reshape(10, 1000)
 
     # Subsample to 500 data points per task.
     train_x = train_x[:, 0:500, :, :, :]
-    train_y = train_y[:, 0:500, :]
+    train_y = train_y[:, 0:500]
 
     print("train_x shape:", train_x.shape)
     print("train_y shape:", train_y.shape)
@@ -194,14 +194,14 @@ def init_network(input_shape):
 def fit_model(train_x, train_y, num_tasks=10):
     # Dimensions 0 and 1 are task and sample, respectively.
     network = init_network(train_x.shape[2:])
-    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs=5)
+    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs = 5)
 
     # TODO remove 2 and put num tasks.
     for t in range(2):
         print("TRAINING TASK: ", t)
         print("-------------------------------------------------------------------")
         classes = np.unique(train_y[t])
-        l2n.add_task(X=train_x[t], y=train_x[t], decider_kwargs={"classes": classes})
+        l2n.add_task(X=train_x[t], y=train_y[t], decider_kwargs={"classes": classes})
         print("-------------------------------------------------------------------")
 
     return l2n
@@ -209,7 +209,7 @@ def fit_model(train_x, train_y, num_tasks=10):
 
 def compute_posteriors(test_x, test_y, l2n, num_tasks=10):
 
-    classes = np.array(l2n.task_id_to_decider[0].classes)
+    classes = np.array(l2n.pl.task_id_to_decider[0].classes)
     probs = l2n.predict_proba(test_x, 0)
 
     for t in range(1, num_tasks):
