@@ -11,7 +11,7 @@ from proglearn.forest import UncertaintyForest
 # Experimental parameters
 n_estimators = 10
 verbose = True
-subsample_fracs = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1]
+subsample_fracs = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 0.999]
 # subsample_fracs = [0.001, 0.003]  # for testing
 
 source_tasks = [
@@ -24,7 +24,6 @@ source_tasks = [
         'name' : 'IMDB Review Sentiment Analysis',
         'filename' : 'imdb',
         'load' : load_imdb,
-        'task_id' : 1,
     },
     {
         'name' : 'Amazon Review Sentiment Analysis',
@@ -46,6 +45,10 @@ for task in source_tasks:
 
         # Fit only on a fraction of the training data.
         _, X_train, _, y_train = train_test_split(X_train_full, y_train_full, test_size=subsample_frac)
+        
+        print("SUBSAMPLE FRAC:", subsample_frac)
+        print("n_train:", len(X_train))
+
         uf = UncertaintyForest(n_estimators=n_estimators)
         uf.fit(X_train, y_train)
         
