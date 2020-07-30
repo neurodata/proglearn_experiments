@@ -128,8 +128,8 @@ def load_data(num_tasks=10):
     test_y = test_y.reshape(10, 1000)
 
     # Subsample to 500 data points per task.
-    train_x = train_x[:, 0:500, :, :, :]
-    train_y = train_y[:, 0:500]
+    # train_x = train_x[:, 0:500, :, :, :]
+    # train_y = train_y[:, 0:500]
 
     print("train_x shape:", train_x.shape)
     print("train_y shape:", train_y.shape)
