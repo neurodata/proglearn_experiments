@@ -104,16 +104,6 @@ def pull_data(num_points_per_task=500, num_tasks=10, shift=1):
                         axis=0,
                     )
 
-    train_x = train_x.reshape(10, 5000, 32, 32, 3)
-    train_y = train_y.reshape(10, 5000, 1)
-    test_x = test_x.reshape(10, 1000, 32, 32, 3)
-    test_y = test_y.reshape(10, 1000, 1)
-
-    # Subsample to 500 data points per task.
-    idx = np.concatenate([np.arange(t * 500, t * 500 + 50) for t in range(num_tasks)])
-    train_x = train_x[:, idx, :, :, :]
-    train_y = train_y[:, idx, :]
-
     data = {
         "train_x": train_x,
         "train_y": train_y,
@@ -124,13 +114,22 @@ def pull_data(num_points_per_task=500, num_tasks=10, shift=1):
     pickle.dump(data, open("data/data.p", "wb"))
 
 
-def load_data():
+def load_data(num_tasks=10):
 
     data = pickle.load(open("data/data.p", "rb"))
     train_x = data["train_x"]
     train_y = data["train_y"]
     test_x = data["test_x"]
     test_y = data["test_y"]
+
+    train_x = train_x.reshape(10, 5000, 32, 32, 3)
+    train_y = train_y.reshape(10, 5000, 1)
+    test_x = test_x.reshape(10, 1000, 32, 32, 3)
+    test_y = test_y.reshape(10, 1000, 1)
+
+    # Subsample to 500 data points per task.
+    train_x = train_x[:, 0:500, :, :, :]
+    train_y = train_y[:, 0:500, :]
 
     print("train_x shape:", train_x.shape)
     print("train_y shape:", train_y.shape)
@@ -195,7 +194,7 @@ def init_network(input_shape):
 def fit_model(train_x, train_y, num_tasks=10):
     # Dimensions 0 and 1 are task and sample, respectively.
     network = init_network(train_x.shape[2:])
-    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs = 5)
+    l2n = LifelongClassificationNetwork(network=network, verbose=True, epochs=5)
 
     # TODO remove 2 and put num tasks.
     for t in range(2):
