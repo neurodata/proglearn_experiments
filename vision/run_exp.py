@@ -1,4 +1,5 @@
-from utils import pull_data, load_data, fit_model, compute_posteriors
+# from utils import pull_data,
+from utils import load_data, fit_model, compute_posteriors
 
 # Run experiment.
 
