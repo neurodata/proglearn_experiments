@@ -2,7 +2,7 @@ import numpy as np
 import pickle
 
 import keras
-import keras.layers as layers
+from keras.layers import Conv2D, Flatten, BatchNormalization, Dropout, Dense, MaxPooling2D
 
 from proglearn.network import LifelongClassificationNetwork
 
@@ -128,8 +128,8 @@ def load_data(num_tasks=10):
     test_y = test_y.reshape(10, 1000)
 
     # Subsample to 500 data points per task.
-    train_x = train_x[:, 0:500, :, :, :]
-    train_y = train_y[:, 0:500]
+    # train_x = train_x[:, 0:500, :, :, :]
+    # train_y = train_y[:, 0:500]
 
     print("train_x shape:", train_x.shape)
     print("train_y shape:", train_y.shape)
@@ -139,29 +139,29 @@ def load_data(num_tasks=10):
     return train_x, train_y, test_x, test_y
 
 
-def init_network(input_shape):
+def will_net(input_shape):
 
     network = keras.Sequential()
     network.add(
-        layers.Conv2D(
+        Conv2D(
             filters=16, kernel_size=(3, 3), activation="relu", input_shape=input_shape,
         )
     )
-    network.add(layers.BatchNormalization())
+    network.add(BatchNormalization())
     network.add(
-        layers.Conv2D(
+        Conv2D(
             filters=32, kernel_size=(3, 3), strides=2, padding="same", activation="relu"
         )
     )
-    network.add(layers.BatchNormalization())
+    network.add(BatchNormalization())
     network.add(
-        layers.Conv2D(
+        Conv2D(
             filters=64, kernel_size=(3, 3), strides=2, padding="same", activation="relu"
         )
     )
-    network.add(layers.BatchNormalization())
+    network.add(BatchNormalization())
     network.add(
-        layers.Conv2D(
+        Conv2D(
             filters=128,
             kernel_size=(3, 3),
             strides=2,
@@ -169,9 +169,9 @@ def init_network(input_shape):
             activation="relu",
         )
     )
-    network.add(layers.BatchNormalization())
+    network.add(BatchNormalization())
     network.add(
-        layers.Conv2D(
+        Conv2D(
             filters=254,
             kernel_size=(3, 3),
             strides=2,
@@ -180,21 +180,44 @@ def init_network(input_shape):
         )
     )
 
-    network.add(layers.Flatten())
-    network.add(layers.BatchNormalization())
-    network.add(layers.Dense(2000, activation="relu"))
-    network.add(layers.BatchNormalization())
-    network.add(layers.Dense(2000, activation="relu"))
-    network.add(layers.BatchNormalization())
-    network.add(layers.Dense(units=10, activation="softmax"))
+    network.add(Flatten())
+    network.add(BatchNormalization())
+    network.add(Dense(2000, activation="relu"))
+    network.add(BatchNormalization())
+    network.add(Dense(2000, activation="relu"))
+    network.add(BatchNormalization())
+    network.add(Dense(units=10, activation="softmax"))
 
     return network
 
 
+def weiwei_net(input_shape, num_outputs=10):
+    
+    model = keras.Sequential()
+    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(32, 32, 3)))
+    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+    model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+    model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(MaxPooling2D((2, 2)))
+    model.add(Dropout(0.2))
+    model.add(Flatten())
+    model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
+    model.add(Dropout(0.2))
+    model.add(Dense(num_outputs, activation='softmax'))
+
+    return model
+
+
 def fit_model(train_x, train_y, num_tasks=10):
     # Dimensions 0 and 1 are task and sample, respectively.
-    network = init_network(train_x.shape[2:])
-    l2n = LifelongClassificationNetwork(network=network)
+    network = weiwei_net(train_x.shape[2:])
+    l2n = LifelongClassificationNetwork(network=network, lr=0.001)
 
     for t in range(num_tasks):
         print("TRAINING TASK: ", t)
