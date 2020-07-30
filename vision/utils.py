@@ -208,18 +208,22 @@ def fit_model(train_x, train_y, num_tasks=10):
 
 def compute_posteriors(test_x, test_y, l2n, num_tasks=10):
 
-    classes = np.array(l2n.pl.task_id_to_decider[0].classes)
-    probs = l2n.predict_proba(test_x[0], 0)
-
-    for t in range(1, num_tasks):
-        probs = np.concatenate((probs, l2n.predict_proba(test_x[t], t)), axis=1)
-        classes = np.concatenate(
-            (classes, np.array(l2n.pl.task_id_to_decider[t].classes))
-        )
+    # which task's test set.
+    for s in range(num_tasks):
+        # which task's posterior predictor.
+        for t in range(num_tasks):
+            probs_st = l2n.predict_proba(test_x[s], t)
+            if t == 0:
+                probs_t = probs_st
+            else:
+                probs_t = np.concatenate((probs_t, probs_st), axis=1)
+        if s == 0:
+            probs = probs_t
+        else:
+            probs = np.concatenate((probs, probs_t), axis=0)
 
     # Save test data again just to make sure posteriors match.
     pickle.dump(test_x, open("output/test_x.p", "wb"))
     pickle.dump(test_y, open("output/test_y.p", "wb"))
-    pickle.dump(classes, open("output/classes.p", "wb"))
     pickle.dump(probs, open("output/probs.p", "wb"))
 
