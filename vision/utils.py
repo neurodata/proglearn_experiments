@@ -114,7 +114,7 @@ def pull_data(num_points_per_task=500, num_tasks=10, shift=1):
     pickle.dump(data, open("data/data.p", "wb"))
 
 
-def load_data(num_tasks=10):
+def load_data(num_tasks=10, split=True):
 
     data = pickle.load(open("data/data.p", "rb"))
     train_x = data["train_x"]
@@ -122,10 +122,11 @@ def load_data(num_tasks=10):
     test_x = data["test_x"]
     test_y = data["test_y"]
 
-    train_x = train_x.reshape(10, 5000, 32, 32, 3)
-    train_y = train_y.reshape(10, 5000)
-    test_x = test_x.reshape(10, 1000, 32, 32, 3)
-    test_y = test_y.reshape(10, 1000)
+    if split:
+        train_x = train_x.reshape(10, 5000, 32, 32, 3)
+        train_y = train_y.reshape(10, 5000)
+        test_x = test_x.reshape(10, 1000, 32, 32, 3)
+        test_y = test_y.reshape(10, 1000)
 
     # Subsample to 500 data points per task.
     # train_x = train_x[:, 0:500, :, :, :]
@@ -139,7 +140,7 @@ def load_data(num_tasks=10):
     return train_x, train_y, test_x, test_y
 
 
-def will_net(input_shape):
+def will_net(input_shape, num_outputs=10):
 
     network = keras.Sequential()
     network.add(
@@ -186,7 +187,7 @@ def will_net(input_shape):
     network.add(BatchNormalization())
     network.add(Dense(2000, activation="relu"))
     network.add(BatchNormalization())
-    network.add(Dense(units=10, activation="softmax"))
+    network.add(Dense(units=num_outputs, activation="softmax"))
 
     return network
 
@@ -227,6 +228,18 @@ def fit_model(train_x, train_y, num_tasks=10):
         print("-------------------------------------------------------------------")
 
     return l2n
+
+
+def run_exp_100(train_x, train_y):
+    network = weiwei_net(train_x.shape[1:])
+    l2n = LifelongClassificationNetwork(network=network, lr=0.001)
+    classes = np.unique(train_y)
+    l2n.add_task(X=train_x, y=train_y, decider_kwargs={"classes": classes}, task_id=0)
+    
+    test_x = pickle.load(open("output/test_x.p", "rb"))
+    probs = l2n.predict_proba(test_x, 0)
+    pickle.dump(classes, open("output/classes100.p", "wb"))
+    pickle.dump(probs, open("output/probs100.p", "wb"))
 
 
 def compute_posteriors(test_x, test_y, l2n, num_tasks=10):
