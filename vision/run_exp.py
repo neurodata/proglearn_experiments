@@ -4,7 +4,7 @@ from utils import pull_data, load_data, fit_model, compute_posteriors
 # Run experiment.
 
 # If first time, run pull_data to get the CIFAR 100 dataset.
-# pull_data()
+pull_data()
 
 train_x, train_y, test_x, test_y = load_data()
 l2n = fit_model(train_x, train_y)

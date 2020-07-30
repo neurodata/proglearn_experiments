@@ -121,12 +121,12 @@ def pull_data(num_points_per_task=500, num_tasks=10, shift=1):
         "test_y": test_y,
     }
 
-    pickle.dump(data, open("experiments/cifar_exp_task_obv/data/data.p", "wb"))
+    pickle.dump(data, open("data/data.p", "wb"))
 
 
 def load_data():
 
-    data = pickle.load(open("experiments/cifar_exp_task_obv/data/data.p", "rb"))
+    data = pickle.load(open("data/data.p", "rb"))
     train_x = data["train_x"]
     train_y = data["train_y"]
     test_x = data["test_x"]
@@ -201,7 +201,8 @@ def fit_model(train_x, train_y, num_tasks=10):
         print("TRAINING TASK: ", t)
         print("-------------------------------------------------------------------")
         classes = np.unique(train_y[t])
-        l2n.add_task(X=train_x[t], y=train_x[t], decider_kwargs={"classes": classes})
+        print(train_x[t].shape)
+        # l2n.add_task(X=train_x[t], y=train_x[t], decider_kwargs={"classes": classes})
         print("-------------------------------------------------------------------")
 
     return l2n
