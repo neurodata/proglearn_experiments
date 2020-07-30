@@ -325,3 +325,5 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
         raise ValueError("Unrecognized view!")
 
     return X_train, y_train, X_test, y_test
+
+
