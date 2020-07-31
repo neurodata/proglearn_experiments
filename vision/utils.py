@@ -215,14 +215,15 @@ def weiwei_net(input_shape, num_outputs=10):
     return model
 
 
-def fit_model(train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=False):
+def fit_model(train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=False, batch_size=32):
     # Dimensions 0 and 1 are task and sample, respectively.
     network = weiwei_net(train_x.shape[2:])
     l2n = LifelongClassificationNetwork(
-        network=network, 
-        lr=lr, 
+        network=network,  
         epochs=epochs,
-        verbose=verbose
+        verbose=verbose,
+        lr=lr,
+        batch_size=batch_size
     )
 
     for t in range(num_tasks):
