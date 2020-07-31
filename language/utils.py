@@ -15,12 +15,12 @@ def load_imdb(view="bert", verbose=False, subsample_frac=None, test_size=0.1):
         # Convert 'negative' and 'positive' label as 0 and 1 respectively.
         y = (y == "positive").astype(int)
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, random_state=42
+        )
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -42,12 +42,12 @@ def load_imdb(view="bert", verbose=False, subsample_frac=None, test_size=0.1):
         X = np.array(data[0])
         y = data[1]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=test_size, random_state=42
+        )
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -82,9 +82,7 @@ def load_yelp(view="bert", verbose=False, subsample_frac=None):
 
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -113,9 +111,7 @@ def load_yelp(view="bert", verbose=False, subsample_frac=None):
 
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -134,10 +130,7 @@ def load_yelp(view="bert", verbose=False, subsample_frac=None):
 
 
 def load_amazon(
-    view="bert", 
-    verbose=False, 
-    review_component='title', 
-    subsample_frac=None
+    view="bert", verbose=False, review_component="title", subsample_frac=None
 ):
     if view == "raw":
         partition = {}
@@ -157,9 +150,7 @@ def load_amazon(
 
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -186,9 +177,9 @@ def load_amazon(
             )
             # The pickle is a tuple of (label, title_embedding, comment_embedding).
             partition["y_%s" % part] = data[0].astype(float) - 1
-            if review_component == 'title':
+            if review_component == "title":
                 partition["X_%s" % part] = np.array(data[1])
-            elif review_component == 'comment':
+            elif review_component == "comment":
                 partition["X_%s" % part] = np.array(data[2])
             else:
                 raise ValueError("'review_component' must be 'title' or 'comment'")
@@ -197,9 +188,7 @@ def load_amazon(
         X_test, y_test = partition["X_test"], partition["y_test"]
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -239,15 +228,13 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
         y_test = data[:, 1:].astype(int)
 
         # Remove all examples that are unlabelled.
-        unlabelled_examples = (y_test[:, 0] != -1)
+        unlabelled_examples = y_test[:, 0] != -1
         y_test = y_test[unlabelled_examples, :]
         X_test = X_test[unlabelled_examples]
 
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -258,30 +245,30 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
                 where the columns indicate 'toxic', 'severe_toxic', 'obscene', 'threat', 
                 'insult', 'identity_hate', and 'not_toxic', in that order."""
             )
-    
+
             print("Number of training examples =", len(X_train))
             print("Number of testing examples =", len(X_test))
 
             print("First few examples:")
             classes = [
-                'toxic', 
-                'severe_toxic', 
-                'obscene', 
-                'threat', 
-                'insult', 
-                'identity_hate', 
+                "toxic",
+                "severe_toxic",
+                "obscene",
+                "threat",
+                "insult",
+                "identity_hate",
             ]
             for i in range(3):
-                print("Comment: -------------------------------------------------------")
+                print(
+                    "Comment: -------------------------------------------------------"
+                )
                 print(X_train[i])
                 print("Class: ----------------------------------------------------")
                 print(classes[np.argmax(y_train[i])])
-    elif view == 'bert':
-        
+    elif view == "bert":
+
         # Train
-        data = pickle.load(
-            open("data/toxic_comment/toxic_train_google_bert.p", "rb")
-        )
+        data = pickle.load(open("data/toxic_comment/toxic_train_google_bert.p", "rb"))
         tensors, ids = zip(*data[0])
         X_train = np.array(tensors)
         y_train = data[1].to_numpy()[:, 1:].astype(float)
@@ -299,15 +286,13 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
         y_test = data[:, 1:].astype(float)
 
         # Remove all examples that are unlabelled.
-        unlabelled_examples = (y_test[:, 0] != -1)
+        unlabelled_examples = y_test[:, 0] != -1
         y_test = y_test[unlabelled_examples, :]
         X_test = X_test[unlabelled_examples]
 
         if subsample_frac:
             _, X_train, _, y_train = train_test_split(
-                X_train, 
-                y_train, 
-                test_size=subsample_frac
+                X_train, y_train, test_size=subsample_frac, random_state=42
             )
         if verbose:
             print(
@@ -326,4 +311,31 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
 
     return X_train, y_train, X_test, y_test
 
+
+def get_source_tasks(sub_yelp=0.001, sub_imdb=0.01, sub_amazon=0.001):
+    source_tasks = [
+        {
+            "name": "Yelp Review Sentiment Analysis",
+            "filename": "yelp",
+            "load": load_yelp,
+            "subsample_frac": sub_yelp,
+            "id": 0,
+        },
+        {
+            "name": "IMDB Review Sentiment Analysis",
+            "filename": "imdb",
+            "load": load_imdb,
+            "subsample_frac": sub_imdb,
+            "id": 1,
+        },
+        {
+            "name": "Amazon Review Sentiment Analysis",
+            "filename": "amazon",
+            "load": load_amazon,
+            "subsample_frac": sub_amazon,
+            "id": 2,
+        },
+    ]
+
+    return source_tasks
 
