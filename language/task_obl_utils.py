@@ -10,6 +10,7 @@ def fit_source_tasks(source_tasks, n_estimators=10, verbose=True):
 
     np.random.seed(12345)
 
+    l2f = LifelongClassificationForest(n_estimators=n_estimators)
     # Fit source tasks.
     for task in source_tasks:
         print("----------------------------------------")
@@ -21,7 +22,6 @@ def fit_source_tasks(source_tasks, n_estimators=10, verbose=True):
             verbose=verbose, subsample_frac=task["subsample_frac"]
         )
 
-        l2f = LifelongClassificationForest(n_estimators=n_estimators)
         l2f.add_task(X_train, y_train, task_id=task["id"])
 
     pickle.dump(l2f, open("output/l2f_source_trained_%d.p" % n_estimators, "wb"))
@@ -32,11 +32,11 @@ def compute_posteriors(source_tasks, n_estimators=10, verbose=True):
     # Load toxic comment data.
     X_train, y_train, X_test, y_test = load_toxic_comment(verbose=verbose)
 
-    l2f = pickle.load(open("output/l2f_source_trained_%d.p" % n_estimators, "wb"))
+    l2f = pickle.load(open("output/l2f_source_trained_%d.p" % n_estimators, "rb"))
 
     # which task's posterior predictor.
-    for t in range(len(source_tasks)):
-        probs_t = l2f.predict_proba(X_test, t)
+    for t, task in enumerate(source_tasks):
+        probs_t = l2f.predict_proba(X_test, task['id'])
         if t == 0:
             probs = probs_t
         else:
