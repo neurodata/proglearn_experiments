@@ -2,7 +2,14 @@ import numpy as np
 import pickle
 
 import keras
-from keras.layers import Conv2D, Flatten, BatchNormalization, Dropout, Dense, MaxPooling2D
+from keras.layers import (
+    Conv2D,
+    Flatten,
+    BatchNormalization,
+    Dropout,
+    Dense,
+    MaxPooling2D,
+)
 
 from proglearn.network import LifelongClassificationNetwork
 
@@ -114,7 +121,7 @@ def pull_data(num_points_per_task=500, num_tasks=10, shift=1):
     pickle.dump(data, open("data/data.p", "wb"))
 
 
-def load_data(num_tasks=10, split=True):
+def load_data(num_tasks=10, split=True, task_prior=False):
 
     data = pickle.load(open("data/data.p", "rb"))
     train_x = data["train_x"]
@@ -127,6 +134,11 @@ def load_data(num_tasks=10, split=True):
         train_y = train_y.reshape(10, 5000)
         test_x = test_x.reshape(10, 1000, 32, 32, 3)
         test_y = test_y.reshape(10, 1000)
+
+    if task_prior:
+        # Redefine y to only be task labels.
+        train_y = np.floor_divide(train_y, num_tasks)
+        test_y = np.floor_divide(test_y, num_tasks)
 
     # Subsample to 500 data points per task.
     # train_x = train_x[:, 0:500, :, :, :]
@@ -193,37 +205,84 @@ def will_net(input_shape, num_outputs=10):
 
 
 def weiwei_net(input_shape, num_outputs=10):
-    
+
     model = keras.Sequential()
-    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same', input_shape=(32, 32, 3)))
-    model.add(Conv2D(32, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(
+        Conv2D(
+            32,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+            input_shape=(32, 32, 3),
+        )
+    )
+    model.add(
+        Conv2D(
+            32,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+        )
+    )
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.2))
-    model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-    model.add(Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(
+        Conv2D(
+            64,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+        )
+    )
+    model.add(
+        Conv2D(
+            64,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+        )
+    )
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.2))
-    model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
-    model.add(Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_uniform', padding='same'))
+    model.add(
+        Conv2D(
+            128,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+        )
+    )
+    model.add(
+        Conv2D(
+            128,
+            (3, 3),
+            activation="relu",
+            kernel_initializer="he_uniform",
+            padding="same",
+        )
+    )
     model.add(MaxPooling2D((2, 2)))
     model.add(Dropout(0.2))
     model.add(Flatten())
-    model.add(Dense(128, activation='relu', kernel_initializer='he_uniform'))
+    model.add(Dense(128, activation="relu", kernel_initializer="he_uniform"))
     model.add(Dropout(0.2))
-    model.add(Dense(num_outputs, activation='softmax'))
+    model.add(Dense(num_outputs, activation="softmax"))
 
     return model
 
 
-def fit_model(train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=False, batch_size=32):
+def fit_model(
+    train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=False, batch_size=32
+):
     # Dimensions 0 and 1 are task and sample, respectively.
     network = weiwei_net(train_x.shape[2:])
     l2n = LifelongClassificationNetwork(
-        network=network,  
-        epochs=epochs,
-        verbose=verbose,
-        lr=lr,
-        batch_size=batch_size
+        network=network, epochs=epochs, verbose=verbose, lr=lr, batch_size=batch_size
     )
 
     for t in range(num_tasks):
@@ -236,21 +295,29 @@ def fit_model(train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=Fals
     return l2n
 
 
-def run_exp_100(train_x, train_y):
-    network = weiwei_net(train_x.shape[1:], num_outputs=100)
+def run_exp(train_x, train_y, test_x, test_y, verbose=True, lr = 0.001, epochs = 100, name="cifar100"):
+    if name == "cifar100":
+        filename = "100"
+        num_outputs = 100
+    elif name == "task_prior":
+        filename = "_task_prior"
+        num_outputs = 10
+    else:
+        raise ValueError("Unrecognized experiment name!")
+
+    network = weiwei_net(train_x.shape[1:], num_outputs=num_outputs)
     l2n = LifelongClassificationNetwork(
-        network=network, 
-        lr=0.003, 
-        batch_size=64, 
-        epochs=200
+        network=network, lr=lr, batch_size=64, epochs=epochs, verbose=verbose
     )
     classes = np.unique(train_y)
     l2n.add_task(X=train_x, y=train_y, decider_kwargs={"classes": classes}, task_id=0)
-    
-    test_x = pickle.load(open("output/test_x.p", "rb"))
+
+    pickle.dump(test_y, open("output/test_y%s.p" % filename, "wb"))
+
+    # Expected shape = (1000, num_outputs)
     probs = l2n.predict_proba(test_x, 0)
-    pickle.dump(classes, open("output/classes100.p", "wb"))
-    pickle.dump(probs, open("output/probs100.p", "wb"))
+    pickle.dump(classes, open("output/classes%s.p" % filename, "wb"))
+    pickle.dump(probs, open("output/probs%s.p" % filename, "wb"))
 
 
 def compute_posteriors(test_x, test_y, l2n, num_tasks=10):
