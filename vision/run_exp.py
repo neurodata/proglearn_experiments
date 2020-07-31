@@ -7,7 +7,7 @@ from utils import load_data, fit_model, compute_posteriors
 # pull_data()
 
 train_x, train_y, test_x, test_y = load_data()
-l2n = fit_model(train_x, train_y, lr = 0.003, batch_size=64)
+l2n = fit_model(train_x, train_y, lr = 0.001, verbose = True, batch_size=64)
 
 # from sklearn.metrics import accuracy_score
 
