@@ -6,13 +6,12 @@ n_estimators = 10
 verbose = True
 
 # Source tasks.
-# TODO fill subsample fracs with actual values.
 source_tasks = [
     {
         "name": "Yelp Review Sentiment Analysis",
         "filename": "yelp",
         "load": load_yelp,
-        "subsample_frac": 0.01,
+        "subsample_frac": 0.001,
         "id": 0,
     },
     {
@@ -26,11 +25,11 @@ source_tasks = [
         "name": "Amazon Review Sentiment Analysis",
         "filename": "amazon",
         "load": load_amazon,
-        "subsample_frac": 0.01,
+        "subsample_frac": 0.001,
         "id": 2,
     },
 ]
 
-l2f = fit_source_tasks(source_tasks, n_estimators=n_estimators, verbose=verbose)
-compute_posteriors(l2f, source_tasks, verbose=verbose)
+fit_source_tasks(source_tasks, n_estimators=n_estimators, verbose=verbose)
+compute_posteriors(source_tasks, n_estimators=n_estimators, verbose=verbose)
 

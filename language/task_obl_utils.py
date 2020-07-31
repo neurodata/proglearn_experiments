@@ -26,14 +26,13 @@ def fit_source_tasks(source_tasks, n_estimators=10, verbose=True):
 
     pickle.dump(l2f, open("output/l2f_source_trained_%d.p" % n_estimators, "wb"))
 
-    return l2f
 
-
-def compute_posteriors(l2f, source_tasks, verbose=True):
+def compute_posteriors(source_tasks, n_estimators=10, verbose=True):
 
     # Load toxic comment data.
-    # TODO Add binarize argument.
     X_train, y_train, X_test, y_test = load_toxic_comment(verbose=verbose)
+
+    l2f = pickle.load(open("output/l2f_source_trained_%d.p" % n_estimators, "wb"))
 
     # which task's posterior predictor.
     for t in range(len(source_tasks)):
