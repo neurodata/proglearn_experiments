@@ -237,8 +237,13 @@ def fit_model(train_x, train_y, num_tasks=10, lr=0.001, epochs=100, verbose=Fals
 
 
 def run_exp_100(train_x, train_y):
-    network = weiwei_net(train_x.shape[1:])
-    l2n = LifelongClassificationNetwork(network=network, lr=0.001)
+    network = weiwei_net(train_x.shape[1:], num_outputs=100)
+    l2n = LifelongClassificationNetwork(
+        network=network, 
+        lr=0.003, 
+        batch_size=64, 
+        epochs=200
+    )
     classes = np.unique(train_y)
     l2n.add_task(X=train_x, y=train_y, decider_kwargs={"classes": classes}, task_id=0)
     
