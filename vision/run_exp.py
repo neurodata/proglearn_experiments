@@ -7,9 +7,12 @@ from utils import load_data, fit_model, compute_posteriors
 # pull_data()
 
 train_x, train_y, test_x, test_y = load_data()
-l2n = fit_model(train_x, train_y)
+l2n = fit_model(train_x, train_y, lr = 0.003, batch_size=64)
 
+# from sklearn.metrics import accuracy_score
 
+# acc = accuracy_score(l2n.predict(test_x[0], 0), test_y[0])
+# print("Accuracy:", acc)
 # Check accuracy on two tasks.
 
 # Posteriors are of the form [n_test * 100],
