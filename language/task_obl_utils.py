@@ -37,12 +37,12 @@ def predict_task_priors(X_test_pooled, t_test_pooled, verbose=True, n_estimators
     l2f = pickle.load(open("output/l2f_task_prior_trained_%d.p" % n_estimators, "rb"))
 
     # Just to see if it can discriminate among the source tasks.
-    task_prior_probs_source = l2f.predict_proba(X_test_pooled)
+    task_prior_probs_source = l2f.predict_proba(X_test_pooled, 0)
 
     # These are the task priors for the toxic comment set.
     np.random.seed(12345)
     X_train, y_train, X_test, y_test = load_toxic_comment(verbose=verbose)
-    task_prior_probs_target = l2f.predict_proba(X_test)
+    task_prior_probs_target = l2f.predict_proba(X_test, 0)
 
     pickle.dump(
         task_prior_probs_source,
