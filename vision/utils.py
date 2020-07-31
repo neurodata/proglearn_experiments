@@ -295,7 +295,7 @@ def fit_model(
     return l2n
 
 
-def run_exp(train_x, train_y, test_x, test_y, name="cifar100"):
+def run_exp(train_x, train_y, test_x, test_y, verbose=True, lr = 0.001, epochs = 100, name="cifar100"):
     if name == "cifar100":
         filename = "100"
         num_outputs = 100
@@ -307,7 +307,7 @@ def run_exp(train_x, train_y, test_x, test_y, name="cifar100"):
 
     network = weiwei_net(train_x.shape[1:], num_outputs=num_outputs)
     l2n = LifelongClassificationNetwork(
-        network=network, lr=0.001, batch_size=64, epochs=200
+        network=network, lr=lr, batch_size=64, epochs=epochs, verbose=verbose
     )
     classes = np.unique(train_y)
     l2n.add_task(X=train_x, y=train_y, decider_kwargs={"classes": classes}, task_id=0)
