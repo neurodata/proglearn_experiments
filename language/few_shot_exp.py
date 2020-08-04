@@ -9,6 +9,7 @@ from sklearn.metrics import accuracy_score
 # Hyperparameters.
 verbose = True
 n_estimators = 10
+n_sims = 10  # number of times to resample the target data.
 subsample_fracs = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1]
 # subsample_fracs = [0.0001, 0.0003]
 
@@ -21,7 +22,7 @@ source_tasks, target_task = get_source_and_target(source_names, target_name)
 # tf = TransferForest(n_estimators=n_estimators)
 # for task in source_tasks:
 #     X_train, y_train, _, _ = task['load'](
-#         verbose=verbose, 
+#         verbose=verbose,
 #         subsample_frac=task['subsample_frac']
 #     )
 #     tf.add_source_task(X_train, y_train, task_id=task['id'])
@@ -32,36 +33,24 @@ source_tasks, target_task = get_source_and_target(source_names, target_name)
 # Load target data, train voters, and compute accuracy.
 X_train_full, y_train_full, X_test, y_test = load_toxic_comment(verbose=verbose)
 
-np.random.seed(12345)
-tf_accs = []
-uf_accs = []
-for subsample_frac in subsample_fracs:
-    _, X_train, _, y_train = train_test_split(
-        X_train_full, 
-        y_train_full, 
-        test_size=subsample_frac, 
-        random_state=42
-    )
+tf_accs = np.zeros((len(subsample_fracs), n_sims))
+uf_accs = np.zeros((len(subsample_fracs), n_sims))
+for i, subsample_frac in enumerate(subsample_fracs):
 
-    tf = pickle.load(open("output/tf_source_trained_%d.p" % n_estimators, "rb"))
-    tf.add_target_task(X_train, y_train, task_id=target_task['id'])
-    y_pred = tf.predict(X_test)
-    acc = 1 - np.mean(np.abs(y_pred - y_test))
-    tf_accs.append(acc)
+    for s in range(n_sims):
+        _, X_train, _, y_train = train_test_split(
+            X_train_full, y_train_full, test_size=subsample_frac,
+        )
 
-    uf = UncertaintyForest(n_estimators=len(source_tasks) * n_estimators)
-    uf.fit(X_train, y_train)
-    y_pred = uf.predict(X_test)
-    acc = 1 - np.mean(np.abs(y_pred - y_test))
-    uf_accs.append(acc)
+        tf = pickle.load(open("output/tf_source_trained_%d.p" % n_estimators, "rb"))
+        tf.add_target_task(X_train, y_train, task_id=target_task["id"])
+        tf_accs[i, s] = np.mean(np.abs(tf.predict(X_test) - y_test))
+
+        uf = UncertaintyForest(n_estimators=len(source_tasks) * n_estimators)
+        uf.fit(X_train, y_train)
+        uf_accs[i, s] = 1 - np.mean(np.abs(uf.predict(X_test) - y_test))
 
 pickle.dump(subsample_fracs, open("output/tf_subsample_fracs.p", "wb"))
 pickle.dump(tf_accs, open("output/tf_accs.p", "wb"))
 pickle.dump(uf_accs, open("output/uf_accs.p", "wb"))
-
-
-
-
-
-
 
