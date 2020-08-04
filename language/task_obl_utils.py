@@ -1,7 +1,7 @@
 import numpy as np
 import pickle
 
-from utils import load_toxic_comment, get_source_and_target
+from utils import get_source_and_target
 
 from proglearn.forest import LifelongClassificationForest
 
@@ -68,7 +68,7 @@ def predict_task_priors(
         t_test_pooled, open("output/source_task_labels%d.p" % multitask_id, "wb"),
     )
 
-    # These are the task priors for the toxic comment set.
+    # These are the task priors for the target set.
     np.random.seed(12345)
     X_train, y_train, X_test, y_test = target_task["load"](verbose=verbose)
     task_prior_probs_target = l2f.predict_proba(X_test, 0)
@@ -112,6 +112,7 @@ def compute_posteriors(
 def load_pooled_data(source_tasks, verbose=True):
 
     np.random.seed(123)
+    first = True
     for task in source_tasks:
         X_train, _, X_test, _ = task["load"](
             verbose=verbose, subsample_frac=task["subsample_frac"]
@@ -121,11 +122,12 @@ def load_pooled_data(source_tasks, verbose=True):
         t_train = task["id"] * np.ones(len(X_train))
         t_test = task["id"] * np.ones(len(X_test))
 
-        if task["id"] == 0:
+        if first:
             X_train_pooled = X_train
             t_train_pooled = t_train
             X_test_pooled = X_test
             t_test_pooled = t_test
+            first = False
         else:
             X_train_pooled = np.concatenate((X_train_pooled, X_train), axis=0)
             t_train_pooled = np.concatenate((t_train_pooled, t_train), axis=0)
