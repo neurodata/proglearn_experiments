@@ -9,8 +9,8 @@ from sklearn.metrics import accuracy_score
 # Hyperparameters.
 verbose = True
 n_estimators = 10
-# subsample_fracs = [0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1]
-subsample_fracs = [0.00003, 0.0001]
+subsample_fracs = [0.0001, 0.0003, 0.001, 0.003, 0.01, 0.03, 0.1]
+# subsample_fracs = [0.0001, 0.0003]
 
 # Load source data.
 source_names = ["yelp", "imdb", "amazon"]
