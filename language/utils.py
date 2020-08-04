@@ -312,30 +312,47 @@ def load_toxic_comment(view="bert", verbose=False, subsample_frac=None):
     return X_train, y_train, X_test, y_test
 
 
-def get_source_tasks(sub_yelp=0.001, sub_imdb=0.01, sub_amazon=0.001):
-    source_tasks = [
-        {
+def get_source_and_target(
+    source_names,
+    target_name,
+    sub_yelp=0.001,
+    sub_imdb=0.01,
+    sub_amazon=0.001,
+    sub_toxic_comment=0.001,
+):
+    tasks = {
+        "yelp": {
             "name": "Yelp Review Sentiment Analysis",
             "filename": "yelp",
             "load": load_yelp,
             "subsample_frac": sub_yelp,
             "id": 0,
         },
-        {
+        "imdb": {
             "name": "IMDB Review Sentiment Analysis",
             "filename": "imdb",
             "load": load_imdb,
             "subsample_frac": sub_imdb,
             "id": 1,
         },
-        {
+        "amazon": {
             "name": "Amazon Review Sentiment Analysis",
             "filename": "amazon",
             "load": load_amazon,
             "subsample_frac": sub_amazon,
             "id": 2,
         },
-    ]
+        "toxic_comment": {
+            "name": "Toxic Comment Identification",
+            "filename": "toxic_comment",
+            "load": load_toxic_comment,
+            "subsample_frac": sub_toxic_comment,
+            "id": 3,
+        },
+    }
 
-    return source_tasks
+    source_tasks = [tasks[source_name] for source_name in source_names]
+    target_task = tasks[target_name]
+
+    return source_tasks, target_task
 
