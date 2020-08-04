@@ -6,7 +6,7 @@ verbose = True
 
 # Multitask 0:
 multitask_id = 0
-source_names = ["yelp", "imdb"]
-target_name = "amazon"
+source_names = ["imdb", "amazon"]
+target_name = "yelp"
 
 run_zero_shot(source_names, target_name, multitask_id, n_estimators, verbose)
