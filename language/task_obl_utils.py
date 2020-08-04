@@ -6,13 +6,15 @@ from utils import get_source_and_target
 from proglearn.forest import LifelongClassificationForest
 
 
-def fit_source_tasks(source_tasks, multitask_id, n_estimators=10, verbose=True):
+def fit_tasks(
+    tasks, multitask_id, n_estimators=10, verbose=True, filename="l2f_source_trained",
+):
 
     np.random.seed(12345)
 
     l2f = LifelongClassificationForest(n_estimators=n_estimators)
     # Fit source tasks.
-    for task in source_tasks:
+    for task in tasks:
         print("----------------------------------------")
         print("TASK:", task["name"])
         print("----------------------------------------")
@@ -25,8 +27,7 @@ def fit_source_tasks(source_tasks, multitask_id, n_estimators=10, verbose=True):
         l2f.add_task(X_train, y_train, task_id=task["id"])
 
     pickle.dump(
-        l2f,
-        open("output/l2f_source_trained_%d_%d.p" % (n_estimators, multitask_id), "wb"),
+        l2f, open("output/%s_%d_%d.p" % (filename, n_estimators, multitask_id), "wb"),
     )
 
 
@@ -86,14 +87,19 @@ def predict_task_priors(
 
 
 def compute_posteriors(
-    source_tasks, target_task, multitask_id, n_estimators=10, verbose=True
+    source_tasks,
+    target_task,
+    multitask_id,
+    n_estimators=10,
+    verbose=True,
+    filename="l2f_source_trained",
 ):
 
     # Load toxic comment data.
     X_train, y_train, X_test, y_test = target_task["load"](verbose=verbose)
 
     l2f = pickle.load(
-        open("output/l2f_source_trained_%d_%d.p" % (n_estimators, multitask_id), "rb")
+        open("output/%s_%d_%d.p" % (filename, n_estimators, multitask_id), "rb")
     )
 
     # which task's posterior predictor.
@@ -156,13 +162,53 @@ def run_zero_shot(source_names, target_name, multitask_id, n_estimators, verbose
     )
 
     # Fit classifiers p(y, | x, t)
-    fit_source_tasks(
-        source_tasks, multitask_id, n_estimators=n_estimators, verbose=verbose
-    )
+    fit_tasks(source_tasks, multitask_id, n_estimators=n_estimators, verbose=verbose)
     compute_posteriors(
         source_tasks,
         target_task,
         multitask_id,
         n_estimators=n_estimators,
         verbose=verbose,
+    )
+
+
+def run_task_aware_pl(source_names, target_name, multitask_id, n_estimators, verbose):
+    source_tasks, target_task = get_source_and_target(source_names, target_name)
+
+    # Fit classifiers p(y, | x, t)
+    fit_tasks(
+        source_tasks + [target_task],
+        multitask_id,
+        n_estimators=n_estimators,
+        verbose=verbose,
+        filename="l2f_source_target_trained",
+    )
+    compute_posteriors(
+        [target_task],
+        target_task,
+        multitask_id,
+        n_estimators=n_estimators,
+        verbose=verbose,
+        filename="l2f_source_target_trained",
+    )
+
+
+def run_single_task(target_name, multitask_id, n_estimators, verbose):
+    source_tasks, target_task = get_source_and_target([], target_name)
+
+    # Fit classifiers p(y, | x, t)
+    fit_tasks(
+        [target_task],
+        multitask_id,
+        n_estimators=n_estimators,
+        verbose=verbose,
+        filename="l2f_target_trained",
+    )
+    compute_posteriors(
+        [target_task],
+        target_task,
+        multitask_id,
+        n_estimators=n_estimators,
+        verbose=verbose,
+        filename="l2f_target_trained",
     )
