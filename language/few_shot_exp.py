@@ -47,11 +47,12 @@ for i, subsample_frac in enumerate(subsample_fracs):
         tf = pickle.load(open("output/tf_source_trained_%d.p" % n_estimators, "rb"))
         tf.add_target_task(X_train, y_train, task_id=target_task["id"])
         y_pred = tf.predict(X_test)
-        tf_accs_n.append(classification_report(y_test, y_pred))
+        tf_accs_n.append(classification_report(y_test, y_pred, zero_division=1))
 
         uf = UncertaintyForest(n_estimators=len(source_tasks) * n_estimators)
+        uf.fit(X_train, y_train)
         y_pred = uf.predict(X_test)
-        uf_accs_n.append(classification_report(y_test, y_pred))
+        uf_accs_n.append(classification_report(y_test, y_pred, zero_division=1))
 
     tf_accs.append(tf_accs_n)
     uf_accs.append(uf_accs_n)
