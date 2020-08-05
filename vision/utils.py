@@ -152,6 +152,35 @@ def load_data(num_tasks=10, split=True, task_prior=False):
     return train_x, train_y, test_x, test_y
 
 
+def load_embedded_data(split=True):
+    data = pickle.load(open("data/cifar_resnet50_embed.p", "rb"))
+    train_emb = data[0]
+    train_label = data[1]
+    test_emb = data[2]
+    test_label = data[3]
+
+    train_idx = np.argsort(train_label, axis=0)
+    test_idx = np.argsort(test_label, axis=0)
+
+    X_train = train_emb[train_idx].reshape(50000, 1000)
+    y_train = train_label[train_idx].reshape(50000, 1)
+    X_test = test_emb[test_idx].reshape(10000, 1000)
+    y_test = test_label[test_idx].reshape(10000, 1)
+
+    if split:
+        X_train = X_train.reshape(10, 5000, 1000)
+        y_train = y_train.reshape(10, 5000, 1)
+        X_test = X_test.reshape(10, 1000, 1000)
+        y_test = y_test.reshape(10, 1000, 1)
+
+    print("X_train shape:", X_train.shape)
+    print("y_train shape:", y_train.shape)
+    print("X_test shape:", X_test.shape)
+    print("y_test shape:", y_test.shape)
+
+    return X_train, y_train, X_test, y_test
+
+
 def will_net(input_shape, num_outputs=10):
 
     network = keras.Sequential()
@@ -295,7 +324,16 @@ def fit_model(
     return l2n
 
 
-def run_exp(train_x, train_y, test_x, test_y, verbose=True, lr = 0.001, epochs = 100, name="cifar100"):
+def run_exp(
+    train_x,
+    train_y,
+    test_x,
+    test_y,
+    verbose=True,
+    lr=0.001,
+    epochs=100,
+    name="cifar100",
+):
     if name == "cifar100":
         filename = "100"
         num_outputs = 100
