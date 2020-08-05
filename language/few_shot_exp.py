@@ -4,7 +4,7 @@ import pickle
 from utils import get_source_and_target, load_toxic_comment
 from proglearn.forest import TransferForest, UncertaintyForest
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 
 # Hyperparameters.
 verbose = True
@@ -33,10 +33,12 @@ source_tasks, target_task = get_source_and_target(source_names, target_name)
 # Load target data, train voters, and compute accuracy.
 X_train_full, y_train_full, X_test, y_test = load_toxic_comment(verbose=verbose)
 
-tf_accs = np.zeros((len(subsample_fracs), n_sims))
-uf_accs = np.zeros((len(subsample_fracs), n_sims))
+tf_accs = []
+uf_accs = []
 for i, subsample_frac in enumerate(subsample_fracs):
 
+    tf_accs_n = []
+    uf_accs_n = []
     for s in range(n_sims):
         _, X_train, _, y_train = train_test_split(
             X_train_full, y_train_full, test_size=subsample_frac,
@@ -44,11 +46,15 @@ for i, subsample_frac in enumerate(subsample_fracs):
 
         tf = pickle.load(open("output/tf_source_trained_%d.p" % n_estimators, "rb"))
         tf.add_target_task(X_train, y_train, task_id=target_task["id"])
-        tf_accs[i, s] = np.mean(np.abs(tf.predict(X_test) - y_test))
+        y_pred = tf.predict(X_test)
+        tf_accs_n.append(classification_report(y_test, y_pred))
 
         uf = UncertaintyForest(n_estimators=len(source_tasks) * n_estimators)
-        uf.fit(X_train, y_train)
-        uf_accs[i, s] = 1 - np.mean(np.abs(uf.predict(X_test) - y_test))
+        y_pred = uf.predict(X_test)
+        uf_accs_n.append(classification_report(y_test, y_pred))
+
+    tf_accs.append(tf_accs_n)
+    uf_accs.append(uf_accs_n)
 
 pickle.dump(subsample_fracs, open("output/tf_subsample_fracs.p", "wb"))
 pickle.dump(tf_accs, open("output/tf_accs.p", "wb"))
