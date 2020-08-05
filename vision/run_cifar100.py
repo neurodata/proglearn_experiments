@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score
 
 n_estimators = 100
 
-X_train, y_train, X_test, y_test = load_embedded_data(split=False)
+X_train, y_train, X_test, y_test = load_embedded_data(split_train=False)
 
 lf = LifelongClassificationForest(n_estimators=n_estimators)
 lf.add_task(X_train, y_train, task_id=0)
