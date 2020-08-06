@@ -19,16 +19,15 @@ target_name = "toxic_comment"
 source_tasks, target_task = get_source_and_target(source_names, target_name)
 
 # Train transformers on source data.
-# tf = TransferForest(n_estimators=n_estimators)
-# for task in source_tasks:
-#     X_train, y_train, _, _ = task['load'](
-#         verbose=verbose,
-#         subsample_frac=task['subsample_frac']
-#     )
-#     tf.add_source_task(X_train, y_train, task_id=task['id'])
+tf = TransferForest(n_estimators=n_estimators)
+for task in source_tasks:
+    X_train, y_train, _, _ = task["load"](
+        verbose=verbose, subsample_frac=task["subsample_frac"]
+    )
+    tf.add_source_task(X_train, y_train, task_id=task["id"])
 
-# # Save the transfer forest with these source task.
-# pickle.dump(tf, open("output/tf_source_trained_%d.p" % n_estimators, "wb"))
+# Save the transfer forest with these source task.
+pickle.dump(tf, open("output/tf_source_trained_%d.p" % n_estimators, "wb"))
 
 # Load target data, train voters, and compute accuracy.
 X_train_full, y_train_full, X_test, y_test = load_toxic_comment(verbose=verbose)
@@ -47,12 +46,16 @@ for i, subsample_frac in enumerate(subsample_fracs):
         tf = pickle.load(open("output/tf_source_trained_%d.p" % n_estimators, "rb"))
         tf.add_target_task(X_train, y_train, task_id=target_task["id"])
         y_pred = tf.predict(X_test)
-        tf_accs_n.append(classification_report(y_test, y_pred, zero_division=1))
+        tf_accs_n.append(
+            classification_report(y_test, y_pred, zero_division=1, output_dict=True)
+        )
 
         uf = UncertaintyForest(n_estimators=len(source_tasks) * n_estimators)
         uf.fit(X_train, y_train)
         y_pred = uf.predict(X_test)
-        uf_accs_n.append(classification_report(y_test, y_pred, zero_division=1))
+        uf_accs_n.append(
+            classification_report(y_test, y_pred, zero_division=1, output_dict=True)
+        )
 
     tf_accs.append(tf_accs_n)
     uf_accs.append(uf_accs_n)
