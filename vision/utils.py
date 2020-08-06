@@ -152,7 +152,7 @@ def load_data(num_tasks=10, split=True, task_prior=False):
     return train_x, train_y, test_x, test_y
 
 
-def load_embedded_data(split_train=False, task_prior=False):
+def load_embedded_data(split_train=False, split_test=False, task_prior=False):
     data = pickle.load(open("data/cifar_resnet50_embed.p", "rb"))
     train_emb = data[0]
     train_label = data[1]
@@ -170,6 +170,10 @@ def load_embedded_data(split_train=False, task_prior=False):
     if split_train:
         X_train = X_train.reshape(10, 5000, 1000)
         y_train = y_train.reshape(10, 5000, 1)
+
+    if split_test:
+        X_test = X_test.reshape(10, 1000, 1000)
+        y_test = y_test.reshape(10, 1000, 1)
 
     if task_prior:
         # Relabel classes as task index.
