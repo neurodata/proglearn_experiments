@@ -2,7 +2,6 @@
 language/data
 energy/Data_Processed_New
 vision/data
-vision/output/lf_task_10.p
 rpa/icon_data
 rpa/icon_data_resized
 rpa/icon_data_encoded
