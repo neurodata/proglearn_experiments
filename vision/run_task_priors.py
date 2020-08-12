@@ -6,9 +6,15 @@ from sklearn.metrics import accuracy_score
 
 from utils import load_embedded_data
 
-n_estimators = 300
+n_estimators = 100
+n_train = 5000
 
 X_train, t_train, X_test, t_test = load_embedded_data(task_prior=True)
+
+# train_idx = np.random.choice(5000, size=n_train, replace=False)
+# val_idx = np.delete(np.arange(5000), train_idx)
+# pickle.dump(train_idx, open("output/train_idx_small_%d.p" % t, "wb"))
+# pickle.dump(val_idx, open("output/val_idx_small_%d.p" % t, "wb"))
 
 lf = LifelongClassificationForest(n_estimators=n_estimators)
 lf.add_task(X_train, t_train, task_id=0)
