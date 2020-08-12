@@ -14,8 +14,8 @@ tasks = [
 
 for task in tasks:
 
-    X_train = pickle.load(open("output/X_%d_train.p" % size, "rb"))
-    y_train = pickle.load(open("output/y_%d_train.p" % size, "rb"))
+    X_train = pickle.load(open("output/X_%d_train.p" % task['size'], "rb"))
+    y_train = pickle.load(open("output/y_%d_train.p" % task['size'], "rb"))
 
     print("Adding task %d" % task["task_id"])
     lf.add_task(X_train, y_train, task["task_id"])
