@@ -11,8 +11,8 @@ uf_probs = []
 for t in range(10):
     uf = UncertaintyForest(n_estimators=n_estimators)
     uf.fit(X_train[t], y_train[t])
-    # uf_probs.append(uf.predict_proba(X_test[t]))
+    uf_probs.append(uf.predict_proba(X_test[t]))
 
     pickle.dump(uf, open("output/uf_task_%d.p" % t, "wb"))
 
-# pickle.dump(uf_probs, open("output/uf_probs.p", "wb"))
+pickle.dump(uf_probs, open("output/uf_probs.p", "wb"))
