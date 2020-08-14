@@ -12,8 +12,14 @@ X_train, t_train, X_test, t_test = load_embedded_data(task_prior=True)
 
 train_idx = pickle.load(open("output/train_idx_task_prior_small.p", "rb"))
 
-X_train = X_train[train_idx]
-t_train = t_train[train_idx]
+idx = train_idx[0]
+for t in range(1, 10):
+    idx = np.concatenate((idx, train_idx[t]), axis=0)
+
+X_train = X_train[idx]
+t_train = t_train[idx]
+
+print(np.unique(t_train))
 
 lf = LifelongClassificationForest(n_estimators=n_estimators)
 lf.add_task(X_train, t_train, task_id=0)
