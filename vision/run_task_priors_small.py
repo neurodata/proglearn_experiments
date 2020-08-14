@@ -14,7 +14,7 @@ train_idx = pickle.load(open("output/train_idx_task_prior_small.p", "rb"))
 
 idx = train_idx[0]
 for t in range(1, 10):
-    idx = np.concatenate((idx, train_idx[t]), axis = 0)
+    idx = np.concatenate((idx, train_idx[t]), axis=0)
 
 X_train = X_train[idx]
 t_train = t_train[idx]
