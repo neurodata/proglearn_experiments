@@ -23,7 +23,7 @@ for task in source_tasks:
     X_train, y_train, _, _ = task["load"](
         verbose=verbose, subsample_frac=task["subsample_frac"]
     )
-    lf.add_source_task(X_train, y_train, task_id=task["id"])
+    lf.add_task(X_train, y_train, task_id=task["id"])
 
 # Save the transfer forest with these source task.
 pickle.dump(lf, open("output/lf_source_trained_task_aware_%d.p" % n_estimators, "wb"))
@@ -45,8 +45,8 @@ for i, subsample_frac in enumerate(subsample_fracs):
         lf = pickle.load(
             open("output/lf_source_trained_task_aware_%d.p" % n_estimators, "rb")
         )
-        lf.add_target_task(X_train, y_train, task_id=target_task["id"])
-        y_pred = lf.predict(X_test)
+        lf.add_task(X_train, y_train, task_id=target_task["id"])
+        y_pred = lf.predict(X_test, target_task["id"])
         tf_accs_n.append(
             classification_report(y_test, y_pred, zero_division=1, output_dict=True)
         )
